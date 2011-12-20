@@ -84,9 +84,14 @@ def send_all():
                 MessageLog.objects.log(message, 1) # @@@ avoid using literal result code
                 message.delete()
                 sent += 1
+            except core_send_mail.BadHeaderError as err:
+                message.defer()
+                logging.warning("message deferred due to failure: %s" % err)
+                MessageLog.objects.log(message, 3, log_message=str(err)) # @@@ avoid using literal result code
+                deferred += 1
             except (socket_error, smtplib.SMTPSenderRefused, smtplib.SMTPRecipientsRefused, smtplib.SMTPAuthenticationError), err:
                 message.defer()
-                logging.info("message deferred due to failure: %s" % err)
+                logging.warning("message deferred due to failure: %s" % err)
                 MessageLog.objects.log(message, 3, log_message=str(err)) # @@@ avoid using literal result code
                 deferred += 1
                 # Get new connection, it case the connection itself has an error.
