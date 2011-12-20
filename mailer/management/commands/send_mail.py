@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import NoArgsCommand
 
+from optparse import make_option
 from mailer.engine import send_all
 
 
@@ -12,8 +13,19 @@ PAUSE_SEND = getattr(settings, "MAILER_PAUSE_SEND", False)
 
 class Command(NoArgsCommand):
     help = "Do one pass through the mail queue, attempting to send all mail."
+
+    option_list = NoArgsCommand.option_list + (
+        make_option('-q', '--quiet', dest='quiet', default=False,
+            action='store_true', help='Silence output unless an error occurs.'),
+    )
     
     def handle_noargs(self, **options):
+        quiet = options.get('quiet', False)
+
+        # Set logging level if quiet
+        if quiet:
+            logging.disable(logging.INFO)
+
         logging.basicConfig(level=logging.DEBUG, format="%(message)s")
         logging.info("-" * 72)
         # if PAUSE_SEND is turned on don't do anything.
