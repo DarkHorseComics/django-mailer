@@ -6,6 +6,7 @@ from lockfile import FileLock, AlreadyLocked, LockTimeout
 from socket import error as socket_error
 
 from django.conf import settings
+from django.core.mail import BadHeaderError
 from django.core.mail import send_mail as core_send_mail
 try:
     # Django 1.2
@@ -84,7 +85,7 @@ def send_all():
                 MessageLog.objects.log(message, 1) # @@@ avoid using literal result code
                 message.delete()
                 sent += 1
-            except core_send_mail.BadHeaderError as err:
+            except BadHeaderError as err:
                 message.defer()
                 logging.warning("message deferred due to failure: %s" % err)
                 MessageLog.objects.log(message, 3, log_message=str(err)) # @@@ avoid using literal result code
