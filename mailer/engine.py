@@ -41,9 +41,15 @@ def prioritize():
                 for message in Message.objects.high_priority().order_by("when_added"):
                     yield message
             while Message.objects.high_priority().count() == 0 and Message.objects.medium_priority().count():
-                yield Message.objects.medium_priority().order_by("when_added")[0]
+                try:
+                    yield Message.objects.medium_priority().order_by("when_added")[0]
+                except IndexError:
+                    break
         while Message.objects.high_priority().count() == 0 and Message.objects.medium_priority().count() == 0 and Message.objects.low_priority().count():
-            yield Message.objects.low_priority().order_by("when_added")[0]
+            try:
+                yield Message.objects.low_priority().order_by("when_added")[0]
+            except IndexError:
+                break
         if Message.objects.non_deferred().count() == 0:
             break
 
