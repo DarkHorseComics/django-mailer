@@ -6,10 +6,10 @@ from mailer.models import Message
 class DbBackend(BaseEmailBackend):
     
     def send_messages(self, email_messages):
-        num_sent = 0
+        db_messages = []
         for email in email_messages:
             msg = Message()
             msg.email = email
-            msg.save()
-            num_sent += 1
-        return num_sent
+            db_messages.append(msg)
+        Message.objects.bulk_create(db_messages)
+        return len(db_messages)
